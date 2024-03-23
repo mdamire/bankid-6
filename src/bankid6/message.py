@@ -198,7 +198,7 @@ class DeviceTypeMessage():
         self.mobile = mobile
 
 
-def get_bankid_message(top: str, inner: str, is_mobile: bool=True, messages: Messages=Messages, use_level=True):
+def get_bankid_message(top: str, inner: str, is_mobile: bool=True, messages: Messages=Messages):
     BMS = messages
     map = {
         CollectStatuses.pending: {
@@ -216,13 +216,6 @@ def get_bankid_message(top: str, inner: str, is_mobile: bool=True, messages: Mes
             "startFailed": UseTypeMessage(BMS.RFA17B, BMS.RFA17A),
             "default": BMS.RFA22
         },
-        'errorCode': {
-            "cancelled": BMS.RFA3,
-            "alreadyInProgress": BMS.RFA4,
-            "requestTimeout": BMS.RFA5,
-            "maintenance": BMS.RFA5,
-            "internalError": BMS.RFA5,
-        }
     }
 
     try: 

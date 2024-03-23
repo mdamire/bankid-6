@@ -1,3 +1,7 @@
+import time
+import hashlib
+import hmac
+
 
 class StartParams():
     def __init__(self, **kwrags):
@@ -26,13 +30,34 @@ class StartParams():
                 cleaned_data[key] = str(value)
         
         return cleaned_data
-    
+
+
+def _qr_data(order_time, qr_start_token, qr_start_secret):
+    qr_time = str(int(time.time() - int(order_time)))
+    qr_auth_code = hmac.new(qr_start_secret.encode(), qr_time.encode(), hashlib.sha256).hexdigest()
+    return ".".join(["bankid", qr_start_token, qr_time, qr_auth_code])
+
 
 class BankIdStartResponse():
-    def __init__(self, response):
+    def __init__(self, response, is_mobile: bool=True):
+        response_data = response.json()
+        
+        self.orderRef = str(response_data['orderRef'])
+        self.autoStartToken = str(response_data['autoStartToken'])
+        self.qrStartToken = str(response_data['qrStartToken'])
+        self.qrStartSecret = str(response_data['qrStartSecret'])
+
+        self.order_time = time.time()
+
         self.response = response
+        self.is_mobile = is_mobile
 
-
-def make_bankid_start_response(response):
+    def launch_url(self, redirect='null'):
+        if self.is_mobile:
+            return f'https://app.bankid.com/?autostarttoken={self.autoStartToken}&redirect={redirect}'
+        return f"bankid:///?autostarttoken={self.autoStartToken}&redirect={redirect}"
     
-    return BankIdStartResponse(response)
+    @property
+    def qr_data(self):
+        return _qr_data(self.order_time, self.qrStartToken, self.qrStartSecret)
+

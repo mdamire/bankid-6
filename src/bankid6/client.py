@@ -3,7 +3,7 @@ import requests
 from pathlib import Path
 from urllib.parse import urljoin
 
-from .handlers import StartParams, make_bankid_start_response
+from .handlers import StartParams, BankIdStartResponse
 from .message import Messages
 from .exceptions import check_bankid_error
 
@@ -23,8 +23,9 @@ class BankIdClient(object):
         cert_pem=None, 
         ca_pem=None, 
         prod_env=False, 
-        timeout=None,
+        request_timeout=None,
         messages=Messages,
+        is_mobile:bool=True
     ) -> None:
 
         if prod_env:
@@ -48,14 +49,16 @@ class BankIdClient(object):
         self.client.cert = (self.key_pem, self.cert_pem)
         self.client.headers = {"Content-Type": "application/json"}
 
-        self.timeout = timeout
+        self.timeout = request_timeout
+        self.messages = messages
+        self.is_mobile = is_mobile
     
     def _uri(self, url):
         return urljoin(self.api_url, url)
     
     def _post(self, uri, json_data):
         response = self.client.post(uri, json=json_data, timeout=self.timeout)
-        check_bankid_error(response)
+        check_bankid_error(response, self.messages)
 
         return response
     
@@ -81,8 +84,7 @@ class BankIdClient(object):
             userVisibleDataFormat=userVisibleDataFormat
         ).clean()
 
-        response = self._post(uri, data)
-        return make_bankid_start_response(response)
+        return self._post(uri, data)
 
     def auth(
         self, 
@@ -92,7 +94,7 @@ class BankIdClient(object):
         userNonVisibleData=None, 
         userVisibleDataFormat=None
     ):
-        return self._initiate_bankid_action(
+        response = self._initiate_bankid_action(
             'auth', 
             endUserIp=endUserIp, 
             requirement=requirement, 
@@ -100,6 +102,8 @@ class BankIdClient(object):
             userNonVisibleData=userNonVisibleData, 
             userVisibleDataFormat=userVisibleDataFormat
         )
+
+        return BankIdStartResponse(response, self.is_mobile)
 
     def sign(
         self, 
@@ -109,7 +113,7 @@ class BankIdClient(object):
         userNonVisibleData=None, 
         userVisibleDataFormat=None
     ):
-        return self._initiate_bankid_action(
+        response = self._initiate_bankid_action(
             'sign', 
             endUserIp=endUserIp, 
             userVisibleData=userVisibleData, 
@@ -117,6 +121,8 @@ class BankIdClient(object):
             userNonVisibleData=userNonVisibleData, 
             userVisibleDataFormat=userVisibleDataFormat
         )
+
+        return BankIdStartResponse(response, self.is_mobile)
 
     def phone_auth(
         self, 
@@ -155,4 +161,3 @@ class BankIdClient(object):
             userNonVisibleData=userNonVisibleData, 
             userVisibleDataFormat=userVisibleDataFormat
         )
-    
