@@ -198,7 +198,9 @@ class DeviceTypeMessage():
         self.mobile = mobile
 
 
-def get_bankid_message(top: str, inner: str, is_mobile: bool=True, messages: Messages=Messages):
+def get_bankid_collect_message(
+        status: str, hint_code: str, is_mobile: bool=True, messages: Messages=Messages
+    ):
     BMS = messages
     map = {
         CollectStatuses.pending: {
@@ -219,7 +221,7 @@ def get_bankid_message(top: str, inner: str, is_mobile: bool=True, messages: Mes
     }
 
     try: 
-        msg = map[top][inner]
+        msg = map[status][hint_code]
     except KeyError:
         return {}
     

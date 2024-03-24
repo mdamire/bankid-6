@@ -1,6 +1,7 @@
 class CollectStatuses():
     pending = 'pending'
     failed = 'failed'
+    complete = 'complete'
 
 
 class UseTypes():

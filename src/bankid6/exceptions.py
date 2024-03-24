@@ -18,7 +18,12 @@ class BankIdError(Exception):
         self.response = response
         self.response_status = response_status
         self.response_data = response_data
-        super().__init__(reason)
+        super().__init__(f"errorCode: {error_code}\nreason: {reason}")
+
+
+class BankIdValidationError(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
 
 
 class ErrorDescription():
@@ -49,19 +54,19 @@ def get_error_description(status_code, error_code, messages:Messages):
             ),
             "invalidParameters": ErrorDescription(
                 ("Invalid parameter. Invalid use of method. Details are found in details.\n\n"
-                "Potential causes:\n\n"
+                "Potential causes:\n"
                 "* Using an orderRef that previously resulted in a completed order. "
-                "The order cannot be collected twice.\n\n"
-                "Using an orderRef that previously resulted in a failed order. "
-                "The order cannot be collected twice.\n\n"
-                "Using an orderRef that is too old.\n\n"
-                "Completed orders can only be collected up to 3 minutes and "
-                "failed orders up to 5 minutes.\n\n"
-                "Timed out orders due to never being picked up by the client "
-                "are only available for collect for 3 min and 10 seconds.\n\n"
-                "Using a different RP-certificate than the one used to create the order.\n\n"
-                "Using too big content in the request.\n\n"
-                "Using non-JSON in the request body."),
+                "The order cannot be collected twice.\n"
+                "* Using an orderRef that previously resulted in a failed order. "
+                "The order cannot be collected twice.\n"
+                "* Using an orderRef that is too old.\n"
+                "* Completed orders can only be collected up to 3 minutes and "
+                "failed orders up to 5 minutes.\n"
+                "* Timed out orders due to never being picked up by the client "
+                "are only available for collect for 3 min and 10 seconds.\n"
+                "* Using a different RP-certificate than the one used to create the order.\n"
+                "* Using too big content in the request.\n"
+                "* Using non-JSON in the request body."),
 
                 ("RP must not try the same request again. This is an internal error "
                 "within the RP's system and must not be communicated to the user "
