@@ -74,10 +74,11 @@ class BankIdStartResponse(BankIdBaseResponse):
         self.qrStartSecret = str(self.response_data['qrStartSecret'])
 
         self.order_time = int(time.time())
-        self.is_mobile = is_mobile
+        self._is_mobile = is_mobile
 
     def launch_url(self, redirect='null'):
-        if self.is_mobile:
+        # TODO: make redirect as url parameters
+        if self._is_mobile:
             return f'https://app.bankid.com/?autostarttoken={self.autoStartToken}&redirect={redirect}'
         return f"bankid:///?autostarttoken={self.autoStartToken}&redirect={redirect}"
     

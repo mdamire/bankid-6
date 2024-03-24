@@ -2,6 +2,7 @@ import os
 import requests
 from pathlib import Path
 from urllib.parse import urljoin
+from typing import Union
 
 from .handlers import (
     RequestParams, BankIdStartResponse, BankIdPhoneStartResponse, BankIdCollectResponse,
@@ -21,8 +22,8 @@ TEST_CA_PEM = os.path.join(BASE_DIR, 'certs/testCARootCert.pem')
 class BankIdClient(object):
 
     def __init__(
-            self, key_pem=None, cert_pem=None, ca_pem=None, prod_env=False, request_timeout=None, 
-            messages=Messages, is_mobile:bool=False
+            self, key_pem: str=None, cert_pem: str=None, ca_pem: str=None, prod_env: bool=False, 
+            request_timeout: int=None, messages: Messages=Messages, is_mobile: bool=False
         ) -> None:
         if prod_env:
             self.api_url = "https://appapi2.bankid.com/rp/v6.0/"
@@ -72,8 +73,8 @@ class BankIdClient(object):
         return self._post(uri, data)
 
     def auth(
-            self, endUserIp, requirement=None, userVisibleData=None, userNonVisibleData=None,
-            userVisibleDataFormat=None
+            self, endUserIp: str, requirement: dict=None, userVisibleData: str=None, 
+            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None
         ):
         response = self._initiate_bankid_action(
             'auth', endUserIp=endUserIp, requirement=requirement, userVisibleData=userVisibleData,
@@ -86,8 +87,8 @@ class BankIdClient(object):
         return start_response
 
     def sign(
-            self, endUserIp, userVisibleData, requirement=None, userNonVisibleData=None, 
-            userVisibleDataFormat=None
+            self, endUserIp: str, userVisibleData: str, requirement: dict=None, 
+            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None
         ):
         response = self._initiate_bankid_action(
             'sign', endUserIp=endUserIp, userVisibleData=userVisibleData, requirement=requirement,
@@ -100,8 +101,8 @@ class BankIdClient(object):
         return start_response
 
     def phone_auth(
-            self, personalNumber, callInitiator, requirement=None, userVisibleData=None,
-            userNonVisibleData=None, userVisibleDataFormat=None
+            self, personalNumber: str, callInitiator: str, requirement: dict=None, userVisibleData: str=None, 
+            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None
         ):
         response = self._initiate_bankid_action(
             'phone/auth', personalNumber=personalNumber, callInitiator=callInitiator, 
@@ -115,8 +116,8 @@ class BankIdClient(object):
         return start_response
 
     def phone_sign(
-            self, personalNumber, callInitiator, userVisibleData, requirement=None, 
-            userNonVisibleData=None, userVisibleDataFormat=None
+            self, personalNumber: str, userVisibleData: str, callInitiator: str, requirement: dict=None, 
+            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None
         ):
         response = self._initiate_bankid_action(
             'phone/sign', personalNumber=personalNumber, callInitiator=callInitiator, 

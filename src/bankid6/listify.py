@@ -5,8 +5,8 @@ class CollectStatuses():
 
 
 class UseTypes():
-    QRCODE = 'qrcode'
-    ONFILE = 'onfile'
+    qrcode = 'qrcode'
+    onfile = 'onfile'
 
 
 class Languages():

@@ -187,8 +187,8 @@ class UseTypeMessage():
 
     def json(self):
         return {
-            UseTypes.QRCODE: self._compile(self.qrcode),
-            UseTypes.ONFILE: self._compile(self.onfile),
+            UseTypes.qrcode: self._compile(self.qrcode),
+            UseTypes.onfile: self._compile(self.onfile),
         }
 
 

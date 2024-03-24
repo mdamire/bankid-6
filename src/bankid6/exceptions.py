@@ -1,15 +1,12 @@
+from requests import Response
+
 from .message import Messages, MesssageDetail
 
 
 class BankIdError(Exception):
-    def __init__(self, 
-        reason: str, 
-        action: str, 
-        message: dict, 
-        error_code: str, 
-        response, 
-        response_status: int, 
-        response_data: dict
+    def __init__(
+        self, reason: str, action: str, message: dict, error_code: str, response: Response,
+        response_status: int, response_data: dict
     ):
         self.reason = reason
         self.action = action
@@ -18,7 +15,9 @@ class BankIdError(Exception):
         self.response = response
         self.response_status = response_status
         self.response_data = response_data
-        super().__init__(f"errorCode: {error_code}\nreason: {reason}")
+        super().__init__(
+            f"response status: {response_status}, errorCode: {error_code}\nreason: {reason}"
+        )
 
 
 class BankIdValidationError(Exception):
