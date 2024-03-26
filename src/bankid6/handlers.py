@@ -113,7 +113,7 @@ class BankIdCompletionData():
         self.json = completion_data
 
         self.user = BankIdCompletionUserData(completion_data['user'])
-        self.device = BankIdCompletionUserData(completion_data['device'])
+        self.device = BankIdCompletionDeviceData(completion_data['device'])
         # TODO: make it to date object
         self.bankIdIssueDate = completion_data['bankIdIssueDate']
         self.stepUp = completion_data['stepUp']
@@ -138,13 +138,13 @@ class BankIdCollectResponse(BankIdBaseResponse):
             )
             self.completionData = None
         
-        self.qr_args = qr_args
+        self._qr_args = qr_args
 
     @property
     def qr_data(self):
-        if not all(self.qr_args):
+        if not all(self._qr_args):
             return
-        return _qr_data(*self.qr_args)
+        return _qr_data(*self._qr_args)
 
 
 class BankIdCancelResponse(BankIdBaseResponse):

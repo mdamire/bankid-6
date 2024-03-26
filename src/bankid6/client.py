@@ -22,7 +22,7 @@ TEST_CA_PEM = os.path.join(BASE_DIR, 'certs/testCARootCert.pem')
 class BankIdClient(object):
 
     def __init__(
-            self, key_pem: str=None, cert_pem: str=None, ca_pem: str=None, prod_env: bool=False, 
+            self, prod_env: bool=False, cert_pem: str=None, key_pem: str=None, ca_pem: str=None, 
             request_timeout: int=None, messages: Messages=Messages, is_mobile: bool=False
         ) -> None:
         if prod_env:
