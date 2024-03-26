@@ -162,7 +162,46 @@ If the message is available, it indicates that the message should be presented t
 ---
 
 ```python
-pass
+import time
+from bankid6 import BankIdClient, CollectStatuses, UseTypes, Languages, BankIdError
+
+bankid_client = BankIdClient()
+
+try:
+    start_response = bankid_client.auth('192.168.0.1')
+except BankIdError as bie:
+    if bie.message:
+        print(bie.message[Languages.en])
+    else:
+        raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}") from bie
+
+print('QR data: ', start_response.qr_data)
+print('Launch url: ', start_response.launch_url())
+
+
+while True:
+    time.sleep(1)
+
+    try:
+        collect_response = bankid_client.collect()
+    except BankIdError as bie:
+        if bie.message:
+            print(bie.message[Languages.en])
+            break
+        else:
+            raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}") from bie
+
+    if collect_response.status == CollectStatuses.complete:
+        print('Authenticated by: ', collect_response.completionData.user.name)
+        break
+    else:
+        if collect_response.hintCode == 'outstandingTransaction':
+            print('QR data: ', collect_response.qr_data)
+        
+        print(collect_response.message[UseTypes.qrcode][Languages.en])
+        
+        if collect_response.status == CollectStatuses.failed:
+            break
 ```
 
 <br/>
@@ -322,6 +361,7 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 - SHA-1 hash over the base 64 XML signature encoded as UTF-8.
 - 12 random bytes is added after the hash.
 - The nonce is 32 bytes (20 + 12).
+`json`: *dict*. Completion data in dict format.
 
 ##### class BankIdCompletionUserData()
 `personalNumber`: *str*. The personal identity number.
