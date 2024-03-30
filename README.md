@@ -231,11 +231,11 @@ while True:
 Starts the bankid auth process. Use this when only user authentication is needed.
 
 **Parameters:**
-- `endUserIp` Required. ip address of the end user as string.
-- `requirement` Optional. Requirements dictionary on how the auth order must be performed. See BankID documentation section Requirements below for more details. 
-- `userVisibleData` Optional. Text displayed to the user. Takes a python string and makes it encoded as UTF-8 and then base 64 encoded. max 500 characters after 64 encoding.
-- `userNonVisibleData` Optional. Text that is not displayed to the user. Takes a python string and makes it encoded as UTF-8 and then base 64 encoded. max 500 characters after 64 encoding.
-- `userVisibleDataFormat` Optional. The value can be set to "simpleMarkdownV1" or True. If it's True then the value is set to "simpleMarkdownV1".
+- `endUserIp` ***Required***. *str*. The user IP address as seen by RP. IPv4 and IPv6 is allowed.
+- `requirement` *Optional*. *dict | object that can be converted to dict*. Requirements dictionary on how the auth order must be performed. See BankID documentation for more details. 
+- `userVisibleData` *Optional*. *str*. Text displayed to the user during authentication with BankID. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
+- `userNonVisibleData` *Optional*. *str*. Text that is not displayed to the user. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
+- `userVisibleDataFormat` *Optional*. The value can be set to "simpleMarkdownV1" or True. If it's True then the value is set to "simpleMarkdownV1".
 
 **Return:** `BankIdStartResponse`
 <br/>
@@ -245,11 +245,11 @@ Starts the bankid auth process. Use this when only user authentication is needed
 Starts the bankid sign process. Use this when user is authenticated to sign something.
 
 **Parameters:**
-- `endUserIp` Required. ip address of the end user as string.
-- `userVisibleData` Required. Text displayed to the user. Takes a python string and makes it encoded as UTF-8 and then base 64 encoded. max 500 characters after 64 encoding.
-- `requirement` Optional. Requirements dictionary on how the auth order must be performed. See BankID documentation section Requirements below for more details. 
-- `userNonVisibleData` Optional. Text that is not displayed to the user. Takes a python string and makes it encoded as UTF-8 and then base 64 encoded. max 500 characters after 64 encoding.
-- `userVisibleDataFormat` Optional. The value can be set to "simpleMarkdownV1" or True. If it's True then the value is set to "simpleMarkdownV1".
+- `endUserIp` ***Required***. *str*. The user IP address as seen by RP. IPv4 and IPv6 is allowed.
+- `userVisibleData` ***Required***. *str*. Text displayed to the user during authentication with BankID. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
+- `requirement` *Optional*. *dict | object that can be converted to dict*. Requirements dictionary on how the auth order must be performed. See BankID documentation for more details. 
+- `userNonVisibleData` *Optional*. *str*. Text that is not displayed to the user. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
+- `userVisibleDataFormat` *Optional*. The value can be set to "simpleMarkdownV1" or True. If it's True then the value is set to "simpleMarkdownV1".
 
 **Return:** `BankIdStartResponse`
 <br/>
@@ -259,12 +259,12 @@ Starts the bankid sign process. Use this when user is authenticated to sign some
 Initiates an authentication order when the user is talking to the RP over the phone. 
 
 **Parameters:**
-- `personalNumber` Required. String. Any valid personal number of the user. It's converted to 12 digit before adding to in the request.
-- `callInitiator` Required. String choice between 'user' or 'RP'.
-- `requirement` Optional. Requirements dictionary on how the auth order must be performed. See BankID documentation section Requirements below for more details. 
-- `userVisibleData` Optional. Text displayed to the user. Takes a python string and makes it encoded as UTF-8 and then base 64 encoded. max 500 characters after 64 encoding.
-- `userNonVisibleData` Optional. Text that is not displayed to the user. Takes a python string and makes it encoded as UTF-8 and then base 64 encoded. max 500 characters after 64 encoding.
-- `userVisibleDataFormat` Optional. The value can be set to "simpleMarkdownV1" or True. If it's True then the value is set to "simpleMarkdownV1".
+- `personalNumber` ***Required***. *str*. Any valid 12 digit personal number of the user.
+- `callInitiator` ***Required***. *str*. choice between 'user' or 'RP'.
+- `requirement` *Optional*. *dict | object that can be converted to dict*. Requirements dictionary on how the auth order must be performed. See BankID documentation for more details. 
+- `userVisibleData` *Optional*. *str*. Text displayed to the user during authentication with BankID. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
+- `userNonVisibleData` *Optional*. *str*. Text that is not displayed to the user. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
+- `userVisibleDataFormat` *Optional*. The value can be set to "simpleMarkdownV1" or True. If it's True then the value is set to "simpleMarkdownV1".
 
 **Return:** `BankIdPhoneStartResponse`
 <br/>
@@ -274,12 +274,12 @@ Initiates an authentication order when the user is talking to the RP over the ph
 Initiates an signing order when the user is talking to the RP over the phone.
 
 **Parameters:**
-- `personalNumber` Required. String. Any valid personal number of the user. It's converted to 12 digit before adding to in the request.
-- `callInitiator` Required. String choice between 'user' or 'RP'.
-- `userVisibleData` Required. Text displayed to the user. Takes a python string and makes it encoded as UTF-8 and then base 64 encoded. max 500 characters after 64 encoding.
-- `requirement` Optional. Requirements dictionary on how the auth order must be performed. See BankID documentation section Requirements below for more details. 
-- `userNonVisibleData` Optional. Text that is not displayed to the user. Takes a python string and makes it encoded as UTF-8 and then base 64 encoded. max 500 characters after 64 encoding.
-- `userVisibleDataFormat` Optional. The value can be set to "simpleMarkdownV1" or True. If it's True then the value is set to "simpleMarkdownV1".
+- `personalNumber` ***Required***. *str*. Any valid 12 digit personal number of the user.
+- `callInitiator` ***Required***. *str*. choice between 'user' or 'RP'.
+- `userVisibleData` ***Required***. *str*. Text displayed to the user during authentication with BankID. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
+- `requirement` *Optional*. *dict | object that can be converted to dict*. Requirements dictionary on how the auth order must be performed. See BankID documentation for more details. 
+- `userNonVisibleData` *Optional*. *str*. Text that is not displayed to the user. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
+- `userVisibleDataFormat` *Optional*. The value can be set to "simpleMarkdownV1" or True. If it's True then the value is set to "simpleMarkdownV1".
 
 **Return:** `BankIdPhoneStartResponse`
 <br/>
@@ -288,8 +288,10 @@ Initiates an signing order when the user is talking to the RP over the phone.
 
 Collect the result of the `auth`, `sign`, `phone_auth` or `phone_sign` methods. If used from same client instance when order was initiated, it doesn't require any parameters
 
-- `orderRef` Optional. String. If given then corresponding order result will be requested. Usefull when the method is being used from different client instance than where the order was started.
-- `qrStartToken`, `qrStartSecret`, `order_time` Optional. If given these are used to calculated QR data. Usefull when the method is being used from different client instance than where the order was started.
+- `orderRef` *Optional*. *str*. Can be found in response object from any order initiator methods. If given then corresponding order result will be requested. Usefull when the method is being used from different client instance than where the order was started.
+- `qrStartToken` *Optional*. *str*. Can be found in response object from any order initiator methods. If given, it will be used to calculate QR data.
+- `qrStartSecret` *Optional*. *str*. Can be found in response object from any order initiator methods. If given, it will be used to calculate QR data.
+- `order_time` *Optional*. *int*. Can be found in response object from any order initiator methods. If given, it will be used to calculate QR data.
 
 **Return:** `BankIdCollectResponse`
 <br/>
@@ -298,7 +300,7 @@ Collect the result of the `auth`, `sign`, `phone_auth` or `phone_sign` methods. 
 
 Cancels an ongoing sign or auth order. If used from same client instance when order was initiated, it doesn't require any parameters
 
-- `orderRef` Optional. String. If given then corresponding order will be cancelled. Usefull when the method is being used from different client instance than where the order was started.
+- `orderRef` *Optional*. *str*. Can be found in response object from any order initiator methods. If given then corresponding order result will be requested. Usefull when the method is being used from different client instance than where the order was started.
 
 **Return:** `BankIdCancelResponse`
 
