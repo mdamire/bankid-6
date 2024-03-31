@@ -12,6 +12,9 @@ class MesssageDetail():
             Languages.sv: self.swedish,
             Languages.en: self.english,
         }
+    
+    def __str__(self) -> str:
+        return f"{self.english}. help: {self.help_text}"
 
 
 class Messages():
@@ -204,10 +207,10 @@ def get_bankid_collect_message(
     BMS = messages
     map = {
         CollectStatuses.pending: {
-            "outstandingTransaction": UseTypeMessage(BMS.RFA1, BMS.RFA13),
+            "outstandingTransaction": UseTypeMessage(qrcode=BMS.RFA1, onfile=BMS.RFA13),
             "noClient": BMS.RFA1,
             "userSign": BMS.RFA9,
-            "started": DeviceTypeMessage(BMS.RFA14A, BMS.RFA14B),
+            "started": DeviceTypeMessage(pc=BMS.RFA14A, mobile=BMS.RFA14B),
             "userMrtd": BMS.RFA23,
             "default": BMS.RFA21,
         },
@@ -215,7 +218,7 @@ def get_bankid_collect_message(
             "userCancel": BMS.RFA6,
             "expiredTransaction": BMS.RFA8,
             "certificateErr": BMS.RFA16,
-            "startFailed": UseTypeMessage(BMS.RFA17B, BMS.RFA17A),
+            "startFailed": UseTypeMessage(qrcode=BMS.RFA17B, onfile=BMS.RFA17A),
             "default": BMS.RFA22
         },
     }
