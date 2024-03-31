@@ -74,7 +74,7 @@ class BankIdClient(object):
 
     def auth(
             self, endUserIp: str, requirement: dict=None, userVisibleData: str=None, 
-            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None
+            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, bool]=None
         ):
         response = self._initiate_bankid_action(
             'auth', endUserIp=endUserIp, requirement=requirement, userVisibleData=userVisibleData,
@@ -88,7 +88,7 @@ class BankIdClient(object):
 
     def sign(
             self, endUserIp: str, userVisibleData: str, requirement: dict=None, 
-            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None
+            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, bool]=None
         ):
         response = self._initiate_bankid_action(
             'sign', endUserIp=endUserIp, userVisibleData=userVisibleData, requirement=requirement,
@@ -102,7 +102,7 @@ class BankIdClient(object):
 
     def phone_auth(
             self, personalNumber: str, callInitiator: str, requirement: dict=None, userVisibleData: str=None, 
-            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None
+            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, bool]=None
         ):
         response = self._initiate_bankid_action(
             'phone/auth', personalNumber=personalNumber, callInitiator=callInitiator, 
@@ -117,7 +117,7 @@ class BankIdClient(object):
 
     def phone_sign(
             self, personalNumber: str, userVisibleData: str, callInitiator: str, requirement: dict=None, 
-            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None
+            userNonVisibleData: str=None, userVisibleDataFormat: Union[str, bool]=None
         ):
         response = self._initiate_bankid_action(
             'phone/sign', personalNumber=personalNumber, callInitiator=callInitiator, 

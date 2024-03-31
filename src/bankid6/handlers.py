@@ -12,6 +12,7 @@ from requests import Response
 from .listify import CollectStatuses
 from .message import get_bankid_collect_message
 from .exceptions import BankIdValidationError
+from .message import Messages
 
 
 class RequestParams():
@@ -69,7 +70,6 @@ class RequestParams():
         return self.clean_userVisibleData(value)
     
     def clean_userVisibleDataFormat(self, value):
-        value = self._ctype('userVisibleDataFormat', value, str)
         if value is True:
             value = 'simpleMarkdownV1'
         
@@ -105,9 +105,9 @@ class RequestParams():
 
         [
             self._error(
-                'requirement', value.keys(), f"Invalid key. valid keys: {valid_keys}"
+                'requirement', key, f"Invalid key. valid keys: {valid_keys}"
             )
-            for key in value.keys() if key not in value.keys()
+            for key in value.keys() if key not in valid_keys
         ]
         if value.get('personalNumber'):
             self.clean_personalNumber(value['personalNumber'])
@@ -126,7 +126,7 @@ class RequestParams():
     def clean_qrStartToken(self, value):
         return self._ctype('qrStartToken', value, str)
 
-    def clean(self):
+    def clean(self) -> dict:
         cleaned_data = {}
 
         for key in self.kwargs.keys():
@@ -142,7 +142,7 @@ class RequestParams():
         return cleaned_data
 
 
-def _qr_data(order_time, qr_start_token, qr_start_secret):
+def generate_qr_data(order_time, qr_start_token, qr_start_secret):
     qr_time = str(int(time.time() - int(order_time)))
     qr_auth_code = hmac.new(qr_start_secret.encode(), qr_time.encode(), hashlib.sha256).hexdigest()
     return ".".join(["bankid", qr_start_token, qr_time, qr_auth_code])
@@ -151,21 +151,21 @@ def _qr_data(order_time, qr_start_token, qr_start_secret):
 class BankIdBaseResponse():
     def __init__(self, response: Response):
         self.response = response
-        self.response_status = response.status_code
-        self.response_data = response.json()
+        self.status_code = response.status_code
+        self.data = response.json()
         self.url = response.url
     
     def __str__(self) -> str:
         return (
-            f"response status: {self.response_status};\n"
-            f"response data: {json.dumps(self.response_data)}"
+            f"response status: {self.status_code};\n"
+            f"response data: {json.dumps(self.data)}"
         )
     
     def __repr__(self) -> str:
         return (
             f"{self.__class__} "
-            f"response status: {self.response_status};\n"
-            f"response data: {json.dumps(self.response_data)}"
+            f"response status: {self.status_code};\n"
+            f"response data: {json.dumps(self.data)}"
         )
 
 
@@ -173,10 +173,10 @@ class BankIdStartResponse(BankIdBaseResponse):
     def __init__(self, response, is_mobile: bool=True):
         super().__init__(response)
         
-        self.orderRef = str(self.response_data['orderRef'])
-        self.autoStartToken = str(self.response_data['autoStartToken'])
-        self.qrStartToken = str(self.response_data['qrStartToken'])
-        self.qrStartSecret = str(self.response_data['qrStartSecret'])
+        self.orderRef = str(self.data['orderRef'])
+        self.autoStartToken = str(self.data['autoStartToken'])
+        self.qrStartToken = str(self.data['qrStartToken'])
+        self.qrStartSecret = str(self.data['qrStartSecret'])
 
         self.order_time = int(time.time())
         self._is_mobile = is_mobile
@@ -189,54 +189,65 @@ class BankIdStartResponse(BankIdBaseResponse):
     
     @property
     def qr_data(self):
-        return _qr_data(self.order_time, self.qrStartToken, self.qrStartSecret)
+        return generate_qr_data(self.order_time, self.qrStartToken, self.qrStartSecret)
 
 
 class BankIdPhoneStartResponse(BankIdBaseResponse):
     def __init__(self, response):
         super().__init__(response)
 
-        self.orderRef = str(self.response_data['orderRef'])
+        self.orderRef = str(self.data['orderRef'])
 
 
 class BankIdCompletionUserData():
     def __init__(self, completion_data_user) -> None:
-        self.personalNumber = completion_data_user['personalNumber']
-        self.name = completion_data_user['name']
-        self.givenName = completion_data_user['givenName']
-        self.surname = completion_data_user['surname']
+        self.personalNumber = completion_data_user.get('personalNumber')
+        self.name = completion_data_user.get('name')
+        self.givenName = completion_data_user.get('givenName')
+        self.surname = completion_data_user.get('surname')
 
 
 class BankIdCompletionDeviceData():
     def __init__(self, completion_data_device) -> None:
-        self.ipAddress = completion_data_device['ipAddress']
-        self.uhi = completion_data_device['uhi']
+        self.ipAddress = completion_data_device.get('ipAddress')
+        self.uhi = completion_data_device.get('uhi')
 
 
 class BankIdCompletionData():
     def __init__(self, completion_data) -> None:
         self.json = completion_data
 
-        self.user = BankIdCompletionUserData(completion_data['user'])
-        self.device = datetime(BankIdCompletionDeviceData(completion_data['device']))
-        self.bankIdIssueDate = completion_data['bankIdIssueDate']
-        self.stepUp = completion_data['stepUp']
-        self.signature = completion_data['signature']
-        self.ocspResponse = completion_data['ocspResponse']
+        if completion_data.get('user'):
+            self.user = BankIdCompletionUserData(completion_data['user'])
+        else:
+            self.user = None
+        
+        if completion_data.get('device'):
+            self.device = BankIdCompletionDeviceData(completion_data['device'])
+        else:
+            self.device = None
+        
+        if completion_data.get('bankIdIssueDate'):
+            self.bankIdIssueDate = datetime.strptime(completion_data['bankIdIssueDate'], '%Y-%m-%d%z')
+        else:
+            self.bankIdIssueDate = None 
+        self.stepUp = completion_data.get('stepUp')
+        self.signature = completion_data.get('signature')
+        self.ocspResponse = completion_data.get('ocspResponse')
 
 
 class BankIdCollectResponse(BankIdBaseResponse):
-    def __init__(self, response, qr_args, messages, is_mobile):
+    def __init__(self, response, qr_args=[], messages=Messages, is_mobile=True):
         super().__init__(response)
 
-        self.orderRef = str(self.response_data['orderRef'])
-        self.status = str(self.response_data['status'])
+        self.orderRef = str(self.data['orderRef'])
+        self.status = str(self.data['status'])
         if self.status == CollectStatuses.complete:
             self.hintCode = None
             self.message = None
-            self.completionData = BankIdCompletionData(self.response_data['completionData'])
+            self.completionData = BankIdCompletionData(self.data['completionData'])
         else:
-            self.hintCode = self.response_data['hintCode']
+            self.hintCode = self.data['hintCode']
             self.message = get_bankid_collect_message(
                 self.status, self.hintCode, is_mobile, messages
             )
@@ -246,9 +257,8 @@ class BankIdCollectResponse(BankIdBaseResponse):
 
     @property
     def qr_data(self):
-        if not all(self._qr_args):
-            return
-        return _qr_data(*self._qr_args)
+        if self._qr_args and all(self._qr_args):
+            return generate_qr_data(*self._qr_args)
 
 
 class BankIdCancelResponse(BankIdBaseResponse):
