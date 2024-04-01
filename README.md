@@ -1,4 +1,25 @@
-# bankid-6
+# bankid6
+
+<br/>
+
+## Overview
+---
+
+A complete implementation of sewdish BankID version 6. It includes initiating/collect/cancel authentication order, User Message and exceptaion handling according to [BankID Documentaion](https://www.bankid.com/en/utvecklare/guider/teknisk-integrationsguide/rp-introduktion).
+<br/>
+
+## Installation
+---
+
+```
+pip install bankid6
+```
+Supports python version 3.6 and later.
+<br/>
+
+
+## User Guide
+---
 
 ### Instantiate `BankIdClient` Class
 
@@ -6,13 +27,14 @@
 
 Instantiate for `BankIdClient` for test environment.
 ```
+>>> from bankid6 import BankIdClient
 >>> bankid_client = BankIdClient()
 ```
-This instance will use BankID test url, test certificates which are provided in the package. It's configured for computers.
-It can be initialized for mobile devices which helps to render correct message and correct url for launching the app.
+This instance will use BankID test url, test certificates which are provided in the package. It's configured for computers. It can be initialized for mobile devices which helps to render correct message and correct url for launching the app.
 ```
 >>> bankid_client = BankIdClient(is_mobile=True)            # Default to False
 ```
+<br/>
 
 To initialize for a production environment, ensure that the `prod_env` parameter is set to `True`. Additionally, you must provide the file paths for the certificate, the private key associated with the certificate, and the CA certificate.
 ```
@@ -22,33 +44,50 @@ To initialize for a production environment, ensure that the `prod_env` parameter
 
 ### Initiate Authentication or Signing Order
 
-The `BankIdClient` offers `auth` and `sign` methods to initiate authentication and signing orders, respectively, either through a QR code or the BankID app on the same device. These methods return a `BankIdStartResponse` object, which contains attributes to easily get the data for QR code and url for launching the BankID app.
+The `BankIdClient` offers `auth` and `sign` methods to initiate authentication and signing orders, respectively. These methods return a `BankIdStartResponse` object, which contains attributes to easily get the data for QR code and url for launching the BankID app.
 
 ```
 >>> bankid_client = BankIdClient()
 >>> start_response = bankid_client.auth('192.168.0.1')      # Takes IP of end user
->>> start_response.qr_data                                  # Calculated from BankID response
+
+>>> start_response.qr_data                                  # Calculated data to create QR code
+'bankid.c03da000-d5de-4435-b81b-66154960784d.8.7a7f4a36307cb8d8ddb4fe86116764819def4c32c55d1ba792e6e4117be9a5a1'
+
 >>> start_response.launch_url()                             # Depends on is_mobile parameter of the BankIdClient
+'bankid:///?autostarttoken=aaba5bef-1066-42da-b6c6-0730b8c53997&redirect=null'
+
 >>> start_response.launch_url('https://www.google.com')     # Takes a redirect url as parameter
->>> dir(start_response)
+'bankid:///?autostarttoken=aaba5bef-1066-42da-b6c6-0730b8c53997&redirect=https%3A%2F%2Fwww.google.com'
+
+>>> [attr for attr in dir(start_response) if not attr.startswith('_')]
+['autoStartToken', 'data', 'launch_url', 'orderRef', 'order_time', 'qrStartSecret', 'qrStartToken', 'qr_data', 'response', 'status_code', 'url']
 ```
+
+Subsequent QR data can be found in response of `collect` method or from `generate_qr_data` function.
+```
+>>> from bankid6 import generate_qr_data
+>>> generate_qr_data(start_response.order_time, start_response.qrStartToken, start_response.qrStartSecret)
+'bankid.c03da000-d5de-4435-b81b-66154960784d.250.16f0f42bb4f1a99d41a31e38cd54866fce5a193e277f4d48339a7579ac51fe4e'
+```
+<br>
 
 The `BankIdClient` also has `phone_auth` and `phone_sign` methods initiate authentication and signing orders while the customer is on the phone. You need to pass a personal number and the BankID will send the request to the customer's BankID app. These methods return a `BankIdPhoneStartResponse` object.
 ```
->>> bankid_client = BankIdClient()
->>> phone_start_response = bankid_client.phone_auth('199002113166', callInitiator="RP")
->>> dir(phone_start_response)
+>>> phone_start_response = BankIdClient().phone_auth('199002113166', callInitiator="RP")
+>>> [attr for attr in dir(phone_start_response) if not attr.startswith('_')]
+['data', 'orderRef', 'response', 'status_code', 'url']
 ```
 
 Both `sign` and `phone_sign` methods require `userVisibleData` parameter.
 ```
->>> bankid_client = BankIdClient()
->>> bankid_client.sign('192.168.0.1', userVisibleData="Hello! Sign this test documents")
+>>> BankIdClient().sign('192.168.0.1', userVisibleData="Hello! Sign this test documents")
+<class 'bankid6.handlers.BankIdStartResponse'> response status: 200;
+response data: {"orderRef": "6eaf4368-22ae-4309-8768-f58b772d1617", "autoStartToken": "3d973332-8abe-4273-b292-b16c975a1a39", "qrStartToken": "29d0b198-487d-42b8-91a8-c63fc94a2733", "qrStartSecret": "a611ccd5-5940-4160-9fde-20a251716bfb"}
 ```
 
 These methods have required or optional parameters exactly as described in BankID documentation. These parameters are validated, processed as BankID requires and sent as the data of the request to the BankID.
 
-The returned objects are derived from `BankIdBaseResponse`, parses any BankID response, creating an attribute with the same name as the key of the response data. `BankIdBaseResponse` has attributes related to HTTP response. This is also True for `collect` or `cancel`.
+The returned objects are derived from `BankIdBaseResponse`, parses any BankID response, creating an attribute with the same name as the key of the response data. `BankIdBaseResponse` has attributes related to actual HTTP response. This is also True for `collect` or `cancel`.
 
 See the API Reference section for comprehensive documentation detailing parameters and return values.
 <br/>
@@ -72,9 +111,11 @@ response data: {"orderRef": "ccc9b028-4c83-49f8-b5ae-a3bac54a7427", "status": "p
 It returns `BankIdCollectResponse` which is derived from `BankIdBaseResponse` class.
 ```
 >>> collect_response = bankid_client.collect()
->>> collect_response.status                             # gives the value of the status
+>>> collect_response.status                             # BankID status from response data
+'pending'
 >>> collect_response.qr_data                            # calculates qr data according to the time             
->>> from bankid6 import `CollectStatuses`
+'bankid.d9c9339c-b9d3-48a2-8289-8d66e1d28a08.21.941023af5b86d5b16aaa226ad7130ee08a1dcdca89e199639a3986336a0569fb'
+>>> from bankid6 import CollectStatuses
 >>> collect_response.status == CollectStatuses.pending  # don't have to remember status values
 True
 ```
@@ -90,9 +131,13 @@ It's possible to decouple the collect method from order initiating methods.
 
 ```
 >>> sr = BankIdClient().auth('192.168.0.1')
->>> BankIdClient().collect(orderRef=sr.orderRef, qrStartToken=sr.qrStartToken, qrStartSecret=sr.qrStartSecret, order_time=sr.order_time)
+>>> cr = BankIdClient().collect(orderRef=sr.orderRef, qrStartToken=sr.qrStartToken, qrStartSecret=sr.qrStartSecret, order_time=sr.order_time)
+>>> cr.qr_data
+'bankid.d9c9339c-b9d3-48a2-8289-8d66e1d28a08.21.941023af5b86d5b16aaa226ad7130ee08a1dcdca89e199639a3986336a0569fb'
 ```
-`orderRef` parameter is used to find the order and `qrStartToken`, `qrStartSecret` and `order_time` parameters are used to calculate the QR code. QR data is accessible in the response of `collect` if the method is invoked from the same client where order was initiated, or if these parameters are provided.
+`orderRef` parameter is used to find the order and `qrStartToken`, `qrStartSecret` and `order_time` parameters are used to calculate the QR code. `qr_data` attribute in `BankIdCollectResponse` object is accessible if the `collect` method is invoked from the same client where order was initiated, or if these parameters are provided.
+
+#### User Message
 
 `BankIdCollectResponse` also has `message` attribute which contains user message according to BankID documentation when the status is 'pending' or 'failed'. A message depends on how order was initiated and the language. Each message is a dict constructed like this:
 ```python
@@ -114,16 +159,33 @@ It's possible to decouple the collect method from order initiating methods.
 >>> cr = bankid_client.collect()
 >>> from bankid6 import UseTypes, Languages
 >>> print(cr.message[UseTypes.qrcode][Languages.en]) if cr.status in [CollectStatuses.complete, CollectStatuses.failed]
+'Start your BankID app.'
 ```
+
+You can make a subclass of `Messages`, override it's existing messages and pass it to`BankIdClient` as a parameter. Any message in `Messages` class is a attribute which starts with 'RFA' as in BankID documentation.
+```python
+from bankid6 import Messages
+
+print(Messages.RFA1.help_text) # prints 'status=pending, hintCode=outstandingTransaction, hintCode=noClient'
+
+class MyMessage(Messages):
+    RFA1 = {'test': 'yes'}
+    RFA13 = ('<h3>swedish message<h3>', '<h3>english message</h3>')
+
+bankid_client = BankIdClient(messages=MyMessage)
+```
+Their value can be a dict or a tuple of swedish and english messages. If the value is dict, it is returned as it is from `message` attribute of `BankIdCollectResponse` object.
 <br/>
 
 ### Cancel Order
 Use `cancel` mothod of `BankIdClient` object to cancel the order.
 ```
 >>> bankid_client = BankIdClient()
+
 >>> bankid_client.auth('192.168.0.1')
 <class 'bankid6.handlers.BankIdStartResponse'> response status: 200
 response data: {"orderRef": "ccc9b028-4c83-49f8-b5ae-a3bac54a7427", "autoStartToken": "96c45dea-d14c-4bc5-bf30-db4015d39da9", "qrStartToken": "d550a68e-1e4d-4d66-8dce-3c6497c8da73", "qrStartSecret": "4b3bba21-ebaa-4bf4-8856-e66271550b78"}
+
 >>> bankid_client.cancel()
 <class 'bankid6.handlers.BankIdCancelResponse'> response status: 200;
 response data: {}
@@ -150,7 +212,7 @@ All methods in `BankIdClient` can raise `BankIdError` or `BankIdValidationError`
     "english": ""
 }
 ```
-If the message is available, it indicates that the message should be presented to the customer without any additional action required. In cases where the message is unavailable, the `reason` and `action` attributes can provide information on why the error occurred and what steps need to be taken to address it.
+If the message is available, it indicates that the message should be presented to the customer without any additional action required. Otherwise, the `reason` and `action` attributes can provide information on why the error occurred and what steps need to be taken to address it according to BankID documentation. Attribute `response_data` has the data received from bankid in dict format. See Api Reference section for more functionalities.
 
 
 `BankIdValidationError` is raised before sending the request to BankID if any parameter is invalid.
@@ -163,7 +225,7 @@ If the message is available, it indicates that the message should be presented t
 
 ```python
 import time
-from bankid6 import BankIdClient, CollectStatuses, UseTypes, Languages, BankIdError
+from bankid6 import BankIdClient, CollectStatuses, UseTypes, Languages, BankIdError, HintCodes
 
 bankid_client = BankIdClient()
 
@@ -171,9 +233,9 @@ try:
     start_response = bankid_client.auth('192.168.0.1')
 except BankIdError as bie:
     if bie.message:
-        print(bie.message[Languages.en])
+        print("User Message: ", bie.message[Languages.en])
     else:
-        raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}") from bie
+        raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}; response data: {bie.response_data}; response status: {bie.response_status}") from bie
 
 print('QR data: ', start_response.qr_data)
 print('Launch url: ', start_response.launch_url())
@@ -189,19 +251,20 @@ while True:
             print(bie.message[Languages.en])
             break
         else:
-            raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}") from bie
+            raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}; response data: {bie.response_data}; response status: {bie.response_status}") from bie
 
     if collect_response.status == CollectStatuses.complete:
         print('Authenticated by: ', collect_response.completionData.user.name)
         break
     else:
-        if collect_response.hintCode == 'outstandingTransaction':
+        if collect_response.hintCode == HintCodes.outstandingTransaction:
             print('QR data: ', collect_response.qr_data)
         
-        print(collect_response.message[UseTypes.qrcode][Languages.en])
+        print("User Message: ", collect_response.message[UseTypes.qrcode][Languages.en])
         
         if collect_response.status == CollectStatuses.failed:
             break
+
 ```
 
 <br/>
@@ -309,8 +372,8 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 ### class BankIdBaseResponse()
 
 `response`: *requests.Response*. object which was returned from sending the request.
-`response_status`: *int*. Http response code of the response
-`response_data`: *dict*. returned data in dict format
+`status`: *int*. Http response code of the response
+`data`: *dict*. returned data in dict format
 `url`: *str*. The full url where the request was sent
 
 <br/>
@@ -351,8 +414,6 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 } 
 ```
 
-<br/>
-
 ##### class BankIdCompletionData()
 `user`: *BankIdCompletionUserData*. Authenticated user information.
 `device`: *BankIdCompletionDeviceData*. Authenticated user's device information.
@@ -378,4 +439,20 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 <br/>
 
 #### class BankIdCancelResponse(BankIdBaseResponse)
- ...
+***...***
+
+<br/>
+
+#### class BankIdError(Exception)
+`reason`: *str*. Reason of the exception according to BankID Documentation
+`action`: *str*. What action is needed for this exception according to BankID Documentation
+`message`: *dict*. Message for user.
+`errorCode`: *str*. Error code received in response data
+`response`: *requests.Response*. object which was returned from sending the request.
+`response_status`: *int*. Http response code of the response
+`response_data`: *dict*. returned data in dict format
+
+<br/>
+
+#### class BankIdValidationError(Exception)
+***...***
