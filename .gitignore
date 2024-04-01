@@ -5,3 +5,4 @@ mtest.py
 dist
 .pytest*
 .coverage
+.tox
