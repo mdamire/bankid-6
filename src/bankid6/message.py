@@ -179,6 +179,9 @@ class UseTypeMessage():
         self.onfile = onfile or qrcode
     
     def _compile(self, value):
+        if isinstance(value, dict):
+            return value
+        
         if not isinstance(value, MesssageDetail):
             try:
                 value = MesssageDetail(value[0], value[1])

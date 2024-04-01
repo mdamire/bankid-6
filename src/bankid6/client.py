@@ -49,7 +49,6 @@ class BankIdClient(object):
         self.timeout = request_timeout
         self.messages = messages
         self.is_mobile = is_mobile
-        self.abs_url = None
 
         self._update({})
     
@@ -116,7 +115,7 @@ class BankIdClient(object):
         return start_response
 
     def phone_sign(
-            self, personalNumber: str, userVisibleData: str, callInitiator: str, requirement: dict=None, 
+            self, personalNumber: str, callInitiator: str, userVisibleData: str, requirement: dict=None, 
             userNonVisibleData: str=None, userVisibleDataFormat: Union[str, bool]=None
         ):
         response = self._initiate_bankid_action(
@@ -138,7 +137,7 @@ class BankIdClient(object):
 
         order_ref = orderRef or self._orderRef
         if not order_ref:
-            BankIdValidationError("orderRef is empty. Start BankId or give orderRef parameter")
+            raise BankIdValidationError("orderRef is empty. Start BankId or give orderRef parameter")
 
         data = RequestParams(orderRef=order_ref).clean()
 
@@ -156,7 +155,7 @@ class BankIdClient(object):
 
         order_ref = orderRef or self._orderRef
         if not order_ref:
-            BankIdValidationError("orderRef is empty. Start BankId or give orderRef parameter")
+            raise BankIdValidationError("orderRef is empty. Start BankId or give orderRef parameter")
         
         data = RequestParams(orderRef=order_ref).clean()
         
