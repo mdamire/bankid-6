@@ -2,3 +2,6 @@
 mtest.py
 *.py[cod]
 **/__pycache__/
+dist
+.pytest*
+.coverage

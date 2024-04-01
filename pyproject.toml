@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "bankid6"
+version = "1.0.0"
+authors = [
+  { name="Amir Ebrahim", email="md.amire02@gmail.com" },
+]
+description = """
+  A complete implementation of swedish BankID version 6. 
+  Easily initiate, collect and cancel authentication orders, 
+  show user message and handle errors.
+"""
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests"
+]
