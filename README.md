@@ -3,23 +3,120 @@
 <br/>
 
 ## Overview
----
 
 A complete implementation of swedish BankID authentication system version 6. It includes initiating/collect/cancel authentication order, User Message and exceptaion handling according to [BankID Documentaion](https://www.bankid.com/en/utvecklare/guider/teknisk-integrationsguide/rp-introduktion).
 <br/>
 
 ## Installation
----
 
 ```
 pip install bankid6
 ```
 Supports python version 3.6 and later.
+
+<br/>
 <br/>
 
+## Quick Start
+
+The following sample script can get you started quickly. There are more functionalities and customization options than what has shown here.
+
+
+```python
+import time
+from bankid6 import BankIdClient, CollectStatuses, UseTypes, Languages, BankIdError, HintCodes
+
+
+# Instantiate client. is_mobile means if it's starting from mobile device
+# For production environment use parameters: 
+# prod_env=True, cert_pem=<certificate_filepath>, key_pem='<key_filepath>', ca_pem='<ca_filepath>'
+bankid_client = BankIdClient(is_mobile=False)
+
+try:
+
+    # Start the authentication order. other methods are sign, phone_auth, phone_sign
+    # Takes parameters according to BankID documentation
+    start_response = bankid_client.auth('192.168.0.1')
+
+except BankIdError as bie:
+
+    if bie.message:
+        # If the message is available then it's sufficient just to show the message to the user.
+        # No more action is needed. 
+        print("User Message: ", bie.message[Languages.en])
+    
+    else:
+        # reason and action are from bankid documentaion. 
+        # also, response_data, response_status attributes are available
+        raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}; response data: {bie.response_data}; response status: {bie.response_status}") from bie
+
+# qr_data gives the calculated data to make qr code. 
+# subsequent values can be found from collect method
+print('QR data: ', start_response.qr_data)
+
+# launch url give you the full url which you need to launch BankID app on current device.
+# It changes depending on is_mobile parameter of client
+# redirect="null" by default
+print('Launch url: ', start_response.launch_url(redirect="https://www.google.com"))
+
+
+while True:
+    time.sleep(1)
+
+    try:
+
+        # Collect the status of order which was initiated with auth/sign/phone_auth/phone_sign method
+
+        # It takes optional parameter which is useful if you want to call collect from different client that you use to initiate the order
+        # Optional prameters: orderRef, qrStartToken, qrStartSecret, order_time
+        # These values are available as start_response attributes. e.g start_response.orderRef
+        collect_response = bankid_client.collect()
+    
+    except BankIdError as bie:
+
+        if bie.message:
+            # Same as before
+            print(bie.message[Languages.en])
+            break
+        
+        else:
+            # same as before
+            raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}; response data: {bie.response_data}; response status: {bie.response_status}") from bie
+
+
+    # CollectStatuses can be used to easily check statuses. No need to copy form documentation. No room for error.
+    if collect_response.status == CollectStatuses.complete:
+
+        # completionData contains all the nested parsed value in python's datatype
+        # the structure is exactly as documentation. e.g collect_response.completionData.user.personalNumber
+        print('Authenticated by: ', collect_response.completionData.user.name)
+        break
+
+    else:
+
+        # Easily check HintCodes against HintCodes class attributes
+        if collect_response.hintCode == HintCodes.outstandingTransaction:
+
+            # collect response also provides calculated QR data to make QR code
+            # If collect method is called from different client instance than where the was initiated
+            # then qrStartToken, qrStartSecret, order_time parameters are needed to supply to collect method to get Calculated QR data
+            print('QR data: ', collect_response.qr_data)
+        
+        # collect response has appropriate messages according to BankID. The message is a dict object.
+        # UseTypes class has attributes describing if the authentication is started via QR code or Auto Staring app on current device
+        # Language class has 'en' and 'sv' attributes
+        print("User Message: ", collect_response.message[UseTypes.qrcode][Languages.en])
+        
+        # failed response also has message which is printed above
+        if collect_response.status == CollectStatuses.failed:
+            break
+
+```
+
+<br/>
+<br/>
 
 ## User Guide
----
 
 ### Instantiate `BankIdClient` Class
 
@@ -220,58 +317,7 @@ If the message is available, it indicates that the message should be presented t
 <br/>
 <br/>
 
-## Sample Script
----
-
-```python
-import time
-from bankid6 import BankIdClient, CollectStatuses, UseTypes, Languages, BankIdError, HintCodes
-
-bankid_client = BankIdClient()
-
-try:
-    start_response = bankid_client.auth('192.168.0.1')
-except BankIdError as bie:
-    if bie.message:
-        print("User Message: ", bie.message[Languages.en])
-    else:
-        raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}; response data: {bie.response_data}; response status: {bie.response_status}") from bie
-
-print('QR data: ', start_response.qr_data)
-print('Launch url: ', start_response.launch_url())
-
-
-while True:
-    time.sleep(1)
-
-    try:
-        collect_response = bankid_client.collect()
-    except BankIdError as bie:
-        if bie.message:
-            print(bie.message[Languages.en])
-            break
-        else:
-            raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}; response data: {bie.response_data}; response status: {bie.response_status}") from bie
-
-    if collect_response.status == CollectStatuses.complete:
-        print('Authenticated by: ', collect_response.completionData.user.name)
-        break
-    else:
-        if collect_response.hintCode == HintCodes.outstandingTransaction:
-            print('QR data: ', collect_response.qr_data)
-        
-        print("User Message: ", collect_response.message[UseTypes.qrcode][Languages.en])
-        
-        if collect_response.status == CollectStatuses.failed:
-            break
-
-```
-
-<br/>
-<br/>
-
 ## API Reference
----
 
 
 #### class BankIdClient()
