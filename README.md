@@ -6,6 +6,7 @@
 
 A complete implementation of swedish BankID authentication system version 6. It includes initiating/collect/cancel authentication order, User Message and exceptaion handling according to [BankID Documentaion](https://www.bankid.com/en/utvecklare/guider/teknisk-integrationsguide/rp-introduktion).
 <br/>
+<br/>
 
 ## Installation
 
@@ -118,7 +119,7 @@ while True:
 
 ## User Guide
 
-### Instantiate `BankIdClient` Class
+### 1. Instantiate `BankIdClient` Class
 
 `BankIdClient` provides functionality to initiate authentication or signing order, collect order result or cancel the order.
 
@@ -138,8 +139,9 @@ To initialize for a production environment, ensure that the `prod_env` parameter
 >>> bankid_client = BankIdClient(prod_env=True, cert_pem=<certificate_filepath>, key_pem='<private_key_filepath>', ca_pem=<ca_certificate_filepath>)
 ```
 <br/>
+<br/>
 
-### Initiate Authentication or Signing Order
+### 2. Initiate Authentication or Signing Order
 
 The `BankIdClient` offers `auth` and `sign` methods to initiate authentication and signing orders, respectively. These methods return a `BankIdStartResponse` object, which contains attributes to easily get the data for QR code and url for launching the BankID app.
 
@@ -188,8 +190,9 @@ The returned objects are derived from `BankIdBaseResponse`, parses any BankID re
 
 See the API Reference section for comprehensive documentation detailing parameters and return values.
 <br/>
+<br/>
 
-### Collect Order Result
+### 3. Collect Order Result
 
 Use `collect` method of `BankIdClient` object to get the order result.
 ```
@@ -273,8 +276,9 @@ bankid_client = BankIdClient(messages=MyMessage)
 ```
 Their value can be a dict or a tuple of swedish and english messages. If the value is dict, it is returned as it is from `message` attribute of `BankIdCollectResponse` object.
 <br/>
+<br/>
 
-### Cancel Order
+### 4. Cancel Order
 Use `cancel` mothod of `BankIdClient` object to cancel the order.
 ```
 >>> bankid_client = BankIdClient()
@@ -297,8 +301,9 @@ This can be decouple by using it's `orderRef` parameter.
 response data: {}
 ```
 <br/>
+<br/>
 
-### Exceptions
+### 5. Exceptions
 
 All methods in `BankIdClient` can raise `BankIdError` or `BankIdValidationError`. 
 
@@ -316,12 +321,13 @@ If the message is available, it indicates that the message should be presented t
 
 <br/>
 <br/>
+<br/>
+<br/>
 
 ## API Reference
 
 
 #### class BankIdClient()
-<br/>
 
 ##### def __init__(self, prod_env: bool=False, cert_pem: str=None, key_pem: str=None, ca_pem: str=None, request_timeout: int=None, messages: Messages=Messages, is_mobile: bool=False)
 
@@ -333,6 +339,7 @@ If the message is available, it indicates that the message should be presented t
 - `request_timeout` number of seconds to wait for response
 - `messages` class or subclass of `Messages` class to override existing message
 - `is_mobile` if it's being used in a mobile device.
+<br/>
 <br/>
 
 ##### def auth(endUserIp: str, requirement: dict=None, userVisibleData: str=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None):
@@ -348,6 +355,7 @@ Starts the bankid auth process. Use this when only user authentication is needed
 
 **Return:** `BankIdStartResponse`
 <br/>
+<br/>
 
 ##### def sign(endUserIp: str, userVisibleData: str, requirement: dict=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None)
 
@@ -361,6 +369,7 @@ Starts the bankid sign process. Use this when user is authenticated to sign some
 - `userVisibleDataFormat` *Optional*. The value can be set to "simpleMarkdownV1" or True. If it's True then the value is set to "simpleMarkdownV1".
 
 **Return:** `BankIdStartResponse`
+<br/>
 <br/>
 
 ##### def phone_auth(personalNumber: str, callInitiator: str, requirement: dict=None, userVisibleData: str=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None)
@@ -377,6 +386,7 @@ Initiates an authentication order when the user is talking to the RP over the ph
 
 **Return:** `BankIdPhoneStartResponse`
 <br/>
+<br/>
 
 ##### def phone_sign(personalNumber, callInitiator, userVisibleData, requirement=None, userNonVisibleData=None, userVisibleDataFormat=None)
 
@@ -392,6 +402,7 @@ Initiates an signing order when the user is talking to the RP over the phone.
 
 **Return:** `BankIdPhoneStartResponse`
 <br/>
+<br/>
 
 ##### def collect(orderRef: str=None, qrStartToken: str=None, qrStartSecret: str=None, order_time: int=None)
 
@@ -404,6 +415,7 @@ Collect the result of the `auth`, `sign`, `phone_auth` or `phone_sign` methods. 
 
 **Return:** `BankIdCollectResponse`
 <br/>
+<br/>
 
 ##### def cancel(orderRef: str=None):
 
@@ -414,6 +426,8 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 **Return:** `BankIdCancelResponse`
 
 <br/>
+<br/>
+<br/>
 
 ### class BankIdBaseResponse()
 
@@ -422,6 +436,8 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 `data`: *dict*. returned data in dict format
 `url`: *str*. The full url where the request was sent
 
+<br/>
+<br/>
 <br/>
 
 ### class BankIdStartResponse(BankIdBaseResponse):
@@ -433,11 +449,15 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 `order_time`: *int*. order time in seconds since the Epoch.
 
 <br/>
+<br/>
+<br/>
 
 ### class BankIdPhoneStartResponse(BankIdBaseResponse):
 
 `orderRef`: *str*. Used to collect the status of the order. Parsed from BankID response.
 
+<br/>
+<br/>
 <br/>
 
 ### class BankIdCollectResponse(BankIdBaseResponse)
@@ -459,6 +479,7 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
     }
 } 
 ```
+<br/>
 
 ##### class BankIdCompletionData()
 `user`: *BankIdCompletionUserData*. Authenticated user information.
@@ -471,22 +492,28 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 - 12 random bytes is added after the hash.
 - The nonce is 32 bytes (20 + 12).
 `json`: *dict*. Completion data in dict format.
+<br/>
 
 ##### class BankIdCompletionUserData()
 `personalNumber`: *str*. The personal identity number.
 `name`: *str*. The given name and surname of the user.
 `givenName`: *str*. The given name of the user.
 `surname`: *str*. The surname of the user.
+<br/>
 
 ##### class BankIdCompletionDeviceData()
 `ipAddress`: *str*. The IP address of the user agent as the BankID server discovers it. When an order is started with autoStartToken the RP can check that this match the IP they observe to ensure session fixation String.
 `uhi`: *str*. Unique hardware identifier for the users device.
 
 <br/>
+<br/>
+<br/>
 
 #### class BankIdCancelResponse(BankIdBaseResponse)
 ***...***
 
+<br/>
+<br/>
 <br/>
 
 #### class BankIdError(Exception)
@@ -498,6 +525,8 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 `response_status`: *int*. Http response code of the response
 `response_data`: *dict*. returned data in dict format
 
+<br/>
+<br/>
 <br/>
 
 #### class BankIdValidationError(Exception)
