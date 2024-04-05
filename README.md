@@ -4,7 +4,7 @@
 
 ## Overview
 
-A complete implementation of swedish BankID authentication system version 6. It includes initiating/collect/cancel authentication order, User Message and exceptaion handling according to [BankID Documentaion](https://www.bankid.com/en/utvecklare/guider/teknisk-integrationsguide/rp-introduktion).
+A complete implementation of Swedish BankID authentication system version 6.  It includes initiating/collecting/canceling authentication orders, user Messages and exception handling according to [BankID Documentaion](https://www.bankid.com/en/utvecklare/guider/teknisk-integrationsguide/rp-introduktion).
 <br/>
 <br/>
 
@@ -20,7 +20,7 @@ Supports python version 3.6 and later.
 
 ## Quick Start
 
-The following sample script can get you started quickly. There are more functionalities and customization options than what has shown here.
+The following sample script can get you started quickly. There are more functionalities and customization options than what has been shown here.
 
 
 ```python
@@ -121,14 +121,14 @@ while True:
 
 ### 1. Instantiate `BankIdClient` Class
 
-`BankIdClient` provides functionality to initiate authentication or signing order, collect order result or cancel the order.
+`BankIdClient` provides functionality to initiate authentication or signing orders, collect order results or cancel the order.
 
 Instantiate for `BankIdClient` for test environment.
 ```
 >>> from bankid6 import BankIdClient
 >>> bankid_client = BankIdClient()
 ```
-This instance will use BankID test url, test certificates which are provided in the package. It's configured for computers. It can be initialized for mobile devices which helps to render correct message and correct url for launching the app.
+This instance will use BankID test url, test certificates which are provided in the package. It's configured for computers. It can be initialized for mobile devices which helps to render correct messages and correct urls for launching the app.
 ```
 >>> bankid_client = BankIdClient(is_mobile=True)            # Default to False
 ```
@@ -162,7 +162,7 @@ The `BankIdClient` offers `auth` and `sign` methods to initiate authentication a
 ['autoStartToken', 'data', 'launch_url', 'orderRef', 'order_time', 'qrStartSecret', 'qrStartToken', 'qr_data', 'response', 'status_code', 'url']
 ```
 
-Subsequent QR data can be found in response of `collect` method or from `generate_qr_data` function.
+Subsequent QR data can be found in response of the `collect` method or from the `generate_qr_data` function.
 ```
 >>> from bankid6 import generate_qr_data
 >>> generate_qr_data(start_response.order_time, start_response.qrStartToken, start_response.qrStartSecret)
@@ -170,14 +170,14 @@ Subsequent QR data can be found in response of `collect` method or from `generat
 ```
 <br>
 
-The `BankIdClient` also has `phone_auth` and `phone_sign` methods initiate authentication and signing orders while the customer is on the phone. You need to pass a personal number and the BankID will send the request to the customer's BankID app. These methods return a `BankIdPhoneStartResponse` object.
+The `BankIdClient` also has `phone_auth` and `phone_sign` methods that initiate authentication and signing orders while the customer is on the phone. You need to pass a personal number and the BankID will send the request to the customer's BankID app. These methods return a `BankIdPhoneStartResponse` object.
 ```
 >>> phone_start_response = BankIdClient().phone_auth('199002113166', callInitiator="RP")
 >>> [attr for attr in dir(phone_start_response) if not attr.startswith('_')]
 ['data', 'orderRef', 'response', 'status_code', 'url']
 ```
 
-Both `sign` and `phone_sign` methods require `userVisibleData` parameter.
+Both `sign` and `phone_sign` methods require the `userVisibleData` parameter.
 ```
 >>> BankIdClient().sign('192.168.0.1', userVisibleData="Hello! Sign this test documents")
 <class 'bankid6.handlers.BankIdStartResponse'> response status: 200;
@@ -235,11 +235,11 @@ It's possible to decouple the collect method from order initiating methods.
 >>> cr.qr_data
 'bankid.d9c9339c-b9d3-48a2-8289-8d66e1d28a08.21.941023af5b86d5b16aaa226ad7130ee08a1dcdca89e199639a3986336a0569fb'
 ```
-`orderRef` parameter is used to find the order and `qrStartToken`, `qrStartSecret` and `order_time` parameters are used to calculate the QR code. `qr_data` attribute in `BankIdCollectResponse` object is accessible if the `collect` method is invoked from the same client where order was initiated, or if these parameters are provided.
+The `orderRef` parameter is used to find the order and `qrStartToken`, `qrStartSecret` and `order_time` parameters are used to calculate the QR code. The `qr_data` attribute in the `BankIdCollectResponse` object is accessible if the `collect` method is invoked from the same client where order was initiated, or if these parameters are provided.
 
 #### User Message
 
-`BankIdCollectResponse` also has `message` attribute which contains user message according to BankID documentation when the status is 'pending' or 'failed'. A message depends on how order was initiated and the language. Each message is a dict constructed like this:
+`BankIdCollectResponse` also has a `message` attribute which contains user messages according to BankID documentation when the status is 'pending' or 'failed'. A message depends on how order was initiated and the language. Each message is a dict constructed like this:
 ```python
 {
     "qrcode": {             # order initiated by scanning qr code
@@ -262,7 +262,7 @@ It's possible to decouple the collect method from order initiating methods.
 'Start your BankID app.'
 ```
 
-You can make a subclass of `Messages`, override it's existing messages and pass it to`BankIdClient` as a parameter. Any message in `Messages` class is a attribute which starts with 'RFA' as in BankID documentation.
+You can make a subclass of `Messages`, override its existing messages and pass it to`BankIdClient` as a parameter. Any message in `Messages` class is an attribute which starts with 'RFA' as in BankID documentation.
 ```python
 from bankid6 import Messages
 
@@ -292,7 +292,7 @@ response data: {"orderRef": "ccc9b028-4c83-49f8-b5ae-a3bac54a7427", "autoStartTo
 response data: {}
 ```
 
-This can be decouple by using it's `orderRef` parameter.
+This can be decoupled by using its `orderRef` parameter.
 
 ```
 >>> start_response = BankIdClient().auth('192.168.0.1')
@@ -307,14 +307,14 @@ response data: {}
 
 All methods in `BankIdClient` can raise `BankIdError` or `BankIdValidationError`. 
 
-`BankIdError` is raised when a request is made to BankID server and it returned an error. It has `message` attribute with structure like:
+`BankIdError` is raised when a request is made to BankID server and it returns an error. It has `message` attribute with structure like:
 ```json
 {
     "swedish": "",
     "english": ""
 }
 ```
-If the message is available, it indicates that the message should be presented to the customer without any additional action required. Otherwise, the `reason` and `action` attributes can provide information on why the error occurred and what steps need to be taken to address it according to BankID documentation. Attribute `response_data` has the data received from bankid in dict format. See Api Reference section for more functionalities.
+If the message is available, it indicates that the message should be presented to the customer without any additional action required. Otherwise, the `reason` and `action` attributes can provide information on why the error occurred and what steps need to be taken to address it according to BankID documentation. Attribute `response_data` has the data received from BankID in dict format. See Api Reference section for more functionalities.
 
 
 `BankIdValidationError` is raised before sending the request to BankID if any parameter is invalid.
@@ -329,7 +329,7 @@ If the message is available, it indicates that the message should be presented t
 
 #### class BankIdClient()
 
-##### def __init__(self, prod_env: bool=False, cert_pem: str=None, key_pem: str=None, ca_pem: str=None, request_timeout: int=None, messages: Messages=Messages, is_mobile: bool=False)
+**def __init__(self, prod_env: bool=False, cert_pem: str=None, key_pem: str=None, ca_pem: str=None, request_timeout: int=None, messages: Messages=Messages, is_mobile: bool=False)**
 
 **Parameters:**
 - `prod_env` indicates if it's a production environment. Test or prod urls are chosen based on this. If it is `True` then `key_pem`, `cert_pem` and `ca_pem` are required. Otherwise test certificates which are already included in the package will be used. Any or all of the certificates can also be provided when the value is `False`
@@ -342,12 +342,12 @@ If the message is available, it indicates that the message should be presented t
 <br/>
 <br/>
 
-##### def auth(endUserIp: str, requirement: dict=None, userVisibleData: str=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None):
+**def auth(endUserIp: str, requirement: dict=None, userVisibleData: str=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None):**
 
-Starts the bankid auth process. Use this when only user authentication is needed.
+Starts the BankID auth process. Use this when only user authentication is needed.
 
 **Parameters:**
-- `endUserIp` ***Required***. *str*. The user IP address as seen by RP. IPv4 and IPv6 is allowed.
+- `endUserIp` ***Required***. *str*. The user IP address as seen by RP. IPv4 and IPv6 are allowed.
 - `requirement` *Optional*. *dict | object that can be converted to dict*. Requirements dictionary on how the auth order must be performed. See BankID documentation for more details. 
 - `userVisibleData` *Optional*. *str*. Text displayed to the user during authentication with BankID. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
 - `userNonVisibleData` *Optional*. *str*. Text that is not displayed to the user. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
@@ -357,12 +357,12 @@ Starts the bankid auth process. Use this when only user authentication is needed
 <br/>
 <br/>
 
-##### def sign(endUserIp: str, userVisibleData: str, requirement: dict=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None)
+**def sign(endUserIp: str, userVisibleData: str, requirement: dict=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None)**
 
-Starts the bankid sign process. Use this when user is authenticated to sign something.
+Starts the BankID sign process. Use this when user is authenticated to sign something.
 
 **Parameters:**
-- `endUserIp` ***Required***. *str*. The user IP address as seen by RP. IPv4 and IPv6 is allowed.
+- `endUserIp` ***Required***. *str*. The user IP address as seen by RP. IPv4 and IPv6 are allowed.
 - `userVisibleData` ***Required***. *str*. Text displayed to the user during authentication with BankID. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
 - `requirement` *Optional*. *dict | object that can be converted to dict*. Requirements dictionary on how the auth order must be performed. See BankID documentation for more details. 
 - `userNonVisibleData` *Optional*. *str*. Text that is not displayed to the user. Converted to UTF-8 encoded and then base 64 encoded string. 1 to 1500 characters after 64 encoding.
@@ -372,7 +372,7 @@ Starts the bankid sign process. Use this when user is authenticated to sign some
 <br/>
 <br/>
 
-##### def phone_auth(personalNumber: str, callInitiator: str, requirement: dict=None, userVisibleData: str=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None)
+**def phone_auth(personalNumber: str, callInitiator: str, requirement: dict=None, userVisibleData: str=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None)**
 
 Initiates an authentication order when the user is talking to the RP over the phone. 
 
@@ -388,7 +388,7 @@ Initiates an authentication order when the user is talking to the RP over the ph
 <br/>
 <br/>
 
-##### def phone_sign(personalNumber, callInitiator, userVisibleData, requirement=None, userNonVisibleData=None, userVisibleDataFormat=None)
+**def phone_sign(personalNumber, callInitiator, userVisibleData, requirement=None, userNonVisibleData=None, userVisibleDataFormat=None)**
 
 Initiates an signing order when the user is talking to the RP over the phone.
 
@@ -404,11 +404,11 @@ Initiates an signing order when the user is talking to the RP over the phone.
 <br/>
 <br/>
 
-##### def collect(orderRef: str=None, qrStartToken: str=None, qrStartSecret: str=None, order_time: int=None)
+**def collect(orderRef: str=None, qrStartToken: str=None, qrStartSecret: str=None, order_time: int=None)**
 
 Collect the result of the `auth`, `sign`, `phone_auth` or `phone_sign` methods. If used from same client instance when order was initiated, it doesn't require any parameters
 
-- `orderRef` *Optional*. *str*. Can be found in response object from any order initiator methods. If given then corresponding order result will be requested. Usefull when the method is being used from different client instance than where the order was started.
+- `orderRef` *Optional*. *str*. Can be found in response object from any order initiator methods. If given then the corresponding order result will be requested. Useful when the method is being used from the different client instance than where the order was started.
 - `qrStartToken` *Optional*. *str*. Can be found in response object from any order initiator methods. If given, it will be used to calculate QR data.
 - `qrStartSecret` *Optional*. *str*. Can be found in response object from any order initiator methods. If given, it will be used to calculate QR data.
 - `order_time` *Optional*. *int*. Can be found in response object from any order initiator methods. If given, it will be used to calculate QR data.
@@ -417,11 +417,11 @@ Collect the result of the `auth`, `sign`, `phone_auth` or `phone_sign` methods. 
 <br/>
 <br/>
 
-##### def cancel(orderRef: str=None):
+**def cancel(orderRef: str=None):**
 
 Cancels an ongoing sign or auth order. If used from same client instance when order was initiated, it doesn't require any parameters
 
-- `orderRef` *Optional*. *str*. Can be found in response object from any order initiator methods. If given then corresponding order result will be requested. Usefull when the method is being used from different client instance than where the order was started.
+- `orderRef` *Optional*. *str*. Can be found in response object from any order initiator methods. If given then the corresponding order result will be requested. Useful when the method is being used from the different client instance than where the order was started.
 
 **Return:** `BankIdCancelResponse`
 
@@ -480,46 +480,48 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 } 
 ```
 <br/>
+<br/>
 
-##### class BankIdCompletionData()
+### class BankIdCompletionData()
 `user`: *BankIdCompletionUserData*. Authenticated user information.
 `device`: *BankIdCompletionDeviceData*. Authenticated user's device information.
-`bankIdIssueDate`: *datatime*. The date the BankID was issued to the user.
+`bankIdIssueDate`: *datetime*. The date the BankID was issued to the user.
 `stepUp`: *str*. Information about extra verifications that were part of the transaction.
 `signature`: *str*. The signature as described in the BankID Signature Profile specification. Base64-encoded.
 `ocspResponse`: *str*. The OCSP response. Base64-encoded. The OCSP response is signed by a certificate that has the same issuer as the certificate being verified. The OSCP response has an extension for Nonce. The nonce is calculated as:
 - SHA-1 hash over the base 64 XML signature encoded as UTF-8.
-- 12 random bytes is added after the hash.
+- 12 random bytes are added after the hash.
 - The nonce is 32 bytes (20 + 12).
 `json`: *dict*. Completion data in dict format.
 <br/>
 
-##### class BankIdCompletionUserData()
+### class BankIdCompletionUserData()
 `personalNumber`: *str*. The personal identity number.
 `name`: *str*. The given name and surname of the user.
 `givenName`: *str*. The given name of the user.
 `surname`: *str*. The surname of the user.
 <br/>
+<br/>
 
-##### class BankIdCompletionDeviceData()
-`ipAddress`: *str*. The IP address of the user agent as the BankID server discovers it. When an order is started with autoStartToken the RP can check that this match the IP they observe to ensure session fixation String.
-`uhi`: *str*. Unique hardware identifier for the users device.
+### class BankIdCompletionDeviceData()
+`ipAddress`: *str*. The IP address of the user agent as the BankID server discovers it. When an order is started with autoStartToken the RP can check that this matchs the IP they observe to ensure session fixation String.
+`uhi`: *str*. Unique hardware identifier for the user's device.
 
 <br/>
 <br/>
 <br/>
 
-#### class BankIdCancelResponse(BankIdBaseResponse)
+### class BankIdCancelResponse(BankIdBaseResponse)
 ***...***
 
 <br/>
 <br/>
 <br/>
 
-#### class BankIdError(Exception)
-`reason`: *str*. Reason of the exception according to BankID Documentation
+### class BankIdError(Exception)
+`reason`: *str*. Reason of the exception according to the BankID Documentation
 `action`: *str*. What action is needed for this exception according to BankID Documentation
-`message`: *dict*. Message for user.
+`message`: *dict*. Message for users.
 `errorCode`: *str*. Error code received in response data
 `response`: *requests.Response*. object which was returned from sending the request.
 `response_status`: *int*. Http response code of the response
@@ -529,5 +531,12 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 <br/>
 <br/>
 
-#### class BankIdValidationError(Exception)
+### class BankIdValidationError(Exception)
 ***...***
+
+<br/>
+<br/>
+<br/>
+
+
+***Any comments or reports on the Github [issue page]("https://github.com/mdamire/bankid-6/issues") are much appreciated.***
