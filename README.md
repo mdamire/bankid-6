@@ -14,106 +14,6 @@ A complete implementation of Swedish BankID authentication system version 6.  It
 pip install bankid6
 ```
 Supports python version 3.6 and later.
-
-<br/>
-<br/>
-
-## Quick Start
-
-The following sample script can get you started quickly. There are more functionalities and customization options than what has been shown here.
-
-
-```python
-import time
-from bankid6 import BankIdClient, CollectStatuses, UseTypes, Languages, BankIdError, HintCodes
-
-
-# Instantiate client. is_mobile means if it's starting from mobile device
-# For production environment use parameters: 
-# prod_env=True, cert_pem=<certificate_filepath>, key_pem='<key_filepath>', ca_pem='<ca_filepath>'
-bankid_client = BankIdClient(is_mobile=False)
-
-try:
-
-    # Start the authentication order. other methods are sign, phone_auth, phone_sign
-    # Takes parameters according to BankID documentation
-    start_response = bankid_client.auth('192.168.0.1')
-
-except BankIdError as bie:
-
-    if bie.message:
-        # If the message is available then it's sufficient just to show the message to the user.
-        # No more action is needed. 
-        print("User Message: ", bie.message[Languages.en])
-    
-    else:
-        # reason and action are from bankid documentaion. 
-        # also, response_data, response_status attributes are available
-        raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}; response data: {bie.response_data}; response status: {bie.response_status}") from bie
-
-# qr_data gives the calculated data to make qr code. 
-# subsequent values can be found from collect method
-print('QR data: ', start_response.qr_data)
-
-# launch url give you the full url which you need to launch BankID app on current device.
-# It changes depending on is_mobile parameter of client
-# redirect="null" by default
-print('Launch url: ', start_response.launch_url(redirect="https://www.google.com"))
-
-
-while True:
-    time.sleep(1)
-
-    try:
-
-        # Collect the status of order which was initiated with auth/sign/phone_auth/phone_sign method
-
-        # It takes optional parameter which is useful if you want to call collect from different client that you use to initiate the order
-        # Optional prameters: orderRef, qrStartToken, qrStartSecret, order_time
-        # These values are available as start_response attributes. e.g start_response.orderRef
-        collect_response = bankid_client.collect()
-    
-    except BankIdError as bie:
-
-        if bie.message:
-            # Same as before
-            print(bie.message[Languages.en])
-            break
-        
-        else:
-            # same as before
-            raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}; response data: {bie.response_data}; response status: {bie.response_status}") from bie
-
-
-    # CollectStatuses can be used to easily check statuses. No need to copy form documentation. No room for error.
-    if collect_response.status == CollectStatuses.complete:
-
-        # completionData contains all the nested parsed value in python's datatype
-        # the structure is exactly as documentation. e.g collect_response.completionData.user.personalNumber
-        print('Authenticated by: ', collect_response.completionData.user.name)
-        break
-
-    else:
-
-        # Easily check HintCodes against HintCodes class attributes
-        if collect_response.hintCode == HintCodes.outstandingTransaction:
-
-            # collect response also provides calculated QR data to make QR code
-            # If collect method is called from different client instance than where the was initiated
-            # then qrStartToken, qrStartSecret, order_time parameters are needed to supply to collect method to get Calculated QR data
-            print('QR data: ', collect_response.qr_data)
-        
-        # collect response has appropriate messages according to BankID. The message is a dict object.
-        # UseTypes class has attributes describing if the authentication is started via QR code or Auto Staring app on current device
-        # Language class has 'en' and 'sv' attributes
-        print("User Message: ", collect_response.message[UseTypes.qrcode][Languages.en])
-        
-        # failed response also has message which is printed above
-        if collect_response.status == CollectStatuses.failed:
-            break
-
-```
-
 <br/>
 <br/>
 
@@ -321,6 +221,58 @@ If the message is available, it indicates that the message should be presented t
 
 <br/>
 <br/>
+
+## Sample Script
+
+```python
+import time
+from bankid6 import BankIdClient, CollectStatuses, UseTypes, Languages, BankIdError, HintCodes
+
+
+bankid_client = BankIdClient()
+
+try:
+    start_response = bankid_client.auth('192.168.0.1')
+except BankIdError as bie:
+    if bie.message:
+        print("User Message: ", bie.message[Languages.en])
+    else:
+        raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}; response data: {bie.response_data}; response status: {bie.response_status}") from bie
+
+print('QR data: ', start_response.qr_data)
+print('Launch url: ', start_response.launch_url())
+
+
+while True:
+    time.sleep(1)
+
+    try:
+        collect_response = bankid_client.collect()
+    except BankIdError as bie:
+        if bie.message:
+            print(bie.message[Languages.en])
+            break
+        else:
+            raise Exception(f"Fatal error. reason: {bie.reason}; action needed: {bie.action}; response data: {bie.response_data}; response status: {bie.response_status}") from bie
+
+
+    if collect_response.status == CollectStatuses.complete:
+        print('Authenticated by: ', collect_response.completionData.user.name)
+        break
+
+    else:
+        if collect_response.hintCode == HintCodes.outstandingTransaction:
+            print('QR data: ', collect_response.qr_data)
+        
+        print("User Message: ", collect_response.message[UseTypes.qrcode][Languages.en])
+        
+        if collect_response.status == CollectStatuses.failed:
+            break
+
+```
+
+<br/>
+<br/>
 <br/>
 <br/>
 
@@ -340,7 +292,6 @@ If the message is available, it indicates that the message should be presented t
 - `messages` class or subclass of `Messages` class to override existing message
 - `is_mobile` if it's being used in a mobile device.
 <br/>
-<br/>
 
 **def auth(endUserIp: str, requirement: dict=None, userVisibleData: str=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None):**
 
@@ -355,7 +306,6 @@ Starts the BankID auth process. Use this when only user authentication is needed
 
 **Return:** `BankIdStartResponse`
 <br/>
-<br/>
 
 **def sign(endUserIp: str, userVisibleData: str, requirement: dict=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None)**
 
@@ -369,7 +319,6 @@ Starts the BankID sign process. Use this when user is authenticated to sign some
 - `userVisibleDataFormat` *Optional*. The value can be set to "simpleMarkdownV1" or True. If it's True then the value is set to "simpleMarkdownV1".
 
 **Return:** `BankIdStartResponse`
-<br/>
 <br/>
 
 **def phone_auth(personalNumber: str, callInitiator: str, requirement: dict=None, userVisibleData: str=None, userNonVisibleData: str=None, userVisibleDataFormat: Union[str, True]=None)**
@@ -386,7 +335,6 @@ Initiates an authentication order when the user is talking to the RP over the ph
 
 **Return:** `BankIdPhoneStartResponse`
 <br/>
-<br/>
 
 **def phone_sign(personalNumber, callInitiator, userVisibleData, requirement=None, userNonVisibleData=None, userVisibleDataFormat=None)**
 
@@ -402,7 +350,6 @@ Initiates an signing order when the user is talking to the RP over the phone.
 
 **Return:** `BankIdPhoneStartResponse`
 <br/>
-<br/>
 
 **def collect(orderRef: str=None, qrStartToken: str=None, qrStartSecret: str=None, order_time: int=None)**
 
@@ -414,7 +361,6 @@ Collect the result of the `auth`, `sign`, `phone_auth` or `phone_sign` methods. 
 - `order_time` *Optional*. *int*. Can be found in response object from any order initiator methods. If given, it will be used to calculate QR data.
 
 **Return:** `BankIdCollectResponse`
-<br/>
 <br/>
 
 **def cancel(orderRef: str=None):**
@@ -537,6 +483,3 @@ Cancels an ongoing sign or auth order. If used from same client instance when or
 <br/>
 <br/>
 <br/>
-
-
-***Any comments or reports on the Github [issue page]("https://github.com/mdamire/bankid-6/issues") are much appreciated.***

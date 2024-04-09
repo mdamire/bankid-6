@@ -25,5 +25,4 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/mdamire/bankid-6"
 Issues = "https://github.com/mdamire/bankid-6/issues"
