@@ -26,3 +26,4 @@ dependencies = [
 
 [project.urls]
 Issues = "https://github.com/mdamire/bankid-6/issues"
+ChangeLog = "https://github.com/mdamire/bankid-6/blob/master/CHANGELOG.md"
