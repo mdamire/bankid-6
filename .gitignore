@@ -1,5 +1,6 @@
 .DS_Store
 mtest.py
+example_script.py
 *.py[cod]
 **/__pycache__/
 dist

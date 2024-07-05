@@ -1,4 +1,4 @@
-from .listify import CollectStatuses, UseTypes, Languages
+from .listify import CollectStatuses, UseTypes, Languages, HintCodesPending, HintCodesFailed
 
 
 class MesssageDetail():
@@ -210,26 +210,27 @@ def get_bankid_collect_message(
     BMS = messages
     map = {
         CollectStatuses.pending: {
-            "outstandingTransaction": UseTypeMessage(qrcode=BMS.RFA1, onfile=BMS.RFA13),
-            "noClient": BMS.RFA1,
-            "userSign": BMS.RFA9,
-            "started": DeviceTypeMessage(pc=BMS.RFA14A, mobile=BMS.RFA14B),
-            "userMrtd": BMS.RFA23,
-            "default": BMS.RFA21,
+            HintCodesPending.outstandingTransaction: UseTypeMessage(qrcode=BMS.RFA1, onfile=BMS.RFA13),
+            HintCodesPending.noClient: BMS.RFA1,
+            HintCodesPending.started: DeviceTypeMessage(pc=BMS.RFA15A, mobile=BMS.RFA15B),
+            HintCodesPending.userMrtd: BMS.RFA23,
+            HintCodesPending.userSign: BMS.RFA9,
+            HintCodesPending.default: BMS.RFA21,
         },
         CollectStatuses.failed: {
-            "userCancel": BMS.RFA6,
-            "expiredTransaction": BMS.RFA8,
-            "certificateErr": BMS.RFA16,
-            "startFailed": UseTypeMessage(qrcode=BMS.RFA17B, onfile=BMS.RFA17A),
-            "default": BMS.RFA22
+            HintCodesFailed.expiredTransaction: BMS.RFA8,
+            HintCodesFailed.certificateErr: BMS.RFA16,
+            HintCodesFailed.userCancel: BMS.RFA6,
+            HintCodesFailed.cancelled: BMS.RFA3,
+            HintCodesFailed.startFailed: UseTypeMessage(qrcode=BMS.RFA17B, onfile=BMS.RFA17A),
+            HintCodesFailed.default: BMS.RFA22
         },
     }
 
     try: 
-        msg = map[status][hint_code]
+        msg = map[status].get(hint_code, map[status]["default"])
     except KeyError:
-        return {}
+        return None
     
     if isinstance(msg, DeviceTypeMessage):
         msg = msg.mobile if is_mobile else msg.pc

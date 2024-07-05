@@ -7,17 +7,22 @@ class CollectStatuses():
 class HintCodesPending():
     outstandingTransaction = "outstandingTransaction"
     noClient = "noClient"
-    userSign = "userSign"
     started = "started"
     userMrtd = "userMrtd"
+    userCallConfirm = "userCallConfirm"
+    userSign = "userSign"
     default = "default"
 
 
 class HintCodesFailed():
-    userCancel = "userCancel"
     expiredTransaction = "expiredTransaction"
     certificateErr = "certificateErr"
+    userCancel = "userCancel"
+    cancelled = "cancelled"
     startFailed = "startFailed"
+    userDeclinedCall = "userDeclinedCall"
+    notSupportedByUserApp = "notSupportedByUserApp"
+    transactionRiskBlocked = "transactionRiskBlocked"
     default = "default"
 
 

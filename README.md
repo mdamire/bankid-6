@@ -194,12 +194,13 @@ The `BankIdCollectResponse` also includes a `message` attribute, which provides 
 Since the method of starting authentication (via QR code or app on the same device) and the preferred language are user choices, you need to dynamically extract the correct message at runtime. This can be done conveniently using the `UseTypes` and `Languages` classes.
 
 ```python
->>> from bankid6 import UseTypes, Languages
+from bankid6 import UseTypes, Languages
 
->>> cr = bankid_client.collect()
->>> if cr.status in [CollectStatuses.pending, CollectStatuses.failed]:
->>>     print(cr.message[UseTypes.qrcode][Languages.en]) 
-'Start your BankID app.'
+... # initialize authentication order like shown before
+
+cr = bankid_client.collect()
+if cr.status in [CollectStatuses.pending, CollectStatuses.failed]:
+    print(cr.message[UseTypes.qrcode][Languages.en])    # prints 'Start your BankID app.'
 ```
 
 You can also subclass `Messages`, override its existing messages, and pass it as a parameter to `BankIdClient`. This is useful if you want to change the message to html format. Each message in the `Messages` class is an attribute starting with 'RFA', as per BankID documentation.
@@ -219,6 +220,18 @@ bankid_client = BankIdClient(messages=MyMessages)
 ```
 
 In `MyMessages`, values can be dictionaries or tuples containing Swedish and English messages. If the value is a dictionary, newly added keys are accessible from the `message` attribute of the `BankIdCollectResponse` object.
+
+For some hint codes where the BankID documentation does not provide a user message, the `message` attribute will contain a default user message. You can define your own message by checking the `status` attribute against the `CollectStatuses` class attributes and the `hintCode` attribute against the `HintCodes` class attributes.
+```python
+from bankid6 import BankIdClient, CollectStatuses, HintCodes
+
+... # initialize authentication order like shown before
+
+cr = bankid_client.collect()
+if cr.status == CollectStatuses.failed and cr.hintCode == HintCodes.userDeclinedCall:
+    custome_message = "Customer didn't verify the call in action" # Your custom message
+```
+
 <br/>
 
 ### 4. Cancel Order
