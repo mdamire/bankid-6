@@ -1,5 +1,10 @@
 # Change Logs
 
+#### Version 1.1.1 (5 July 2024)
+- Test certificates updated
+
+<br>
+
 #### Version 1.1.0 (5 July 2024)
 - User message updated
 - Default user message added
